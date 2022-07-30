@@ -108,8 +108,8 @@ def get_progress_bar_string(status):
     return p_str
 
 def get_readable_message():
+    mulai = time()
     with download_dict_lock:
-        mulai = time()
         msg = ""
         if STATUS_LIMIT is not None:
             tasks = len(download_dict)
@@ -120,9 +120,9 @@ def get_readable_message():
                 globals()['PAGE_NO'] -= 1
         for index, download in enumerate(list(download_dict.values())[COUNT:], start=1):
             msg += f"<b>Nama:</b> <code>{escape(str(download.name()))}</code>"
-            msg += f"\n<b>Status:</b> <i>{download.status()}</i>"
+            msg += f"\n<b>Status:</b> <i>{download.status()}</i> {download.progress()}"
             if download.status() not in [MirrorStatus.STATUS_SPLITTING, MirrorStatus.STATUS_SEEDING]:
-                msg += f"\n{get_progress_bar_string(download)} {download.progress()}"
+                msg += f"\n{get_progress_bar_string(download)}"
                 if download.status() in [MirrorStatus.STATUS_DOWNLOADING,
                                          MirrorStatus.STATUS_WAITING,
                                          MirrorStatus.STATUS_PAUSE]:

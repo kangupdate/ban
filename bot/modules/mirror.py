@@ -12,7 +12,7 @@ from telegram import InlineKeyboardMarkup
 
 from bot import Interval, botStartTime, INDEX_URL, VIEW_LINK, aria2, QB_SEED, dispatcher, DOWNLOAD_DIR, \
                 download_dict, download_dict_lock, LEECH_SPLIT_SIZE, LOGGER, MEGA_KEY, DB_URI, INCOMPLETE_TASK_NOTIFIER
-from bot.helper.ext_utils.bot_utils import is_url, is_magnet, is_mega_link, is_gdrive_link, get_content_type, get_readable_message, get_readable_time
+from bot.helper.ext_utils.bot_utils import is_url, is_magnet, is_mega_link, is_gdrive_link, get_content_type, get_readable_time
 from bot.helper.ext_utils.fs_utils import get_base_name, get_path_size, split_file, clean_download
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException, NotSupportedExtractionArchive
 from bot.helper.mirror_utils.download_utils.aria2_download import add_aria2c_download
@@ -36,7 +36,7 @@ from bot.helper.ext_utils.db_handler import DbManger
 
 
 class MirrorListener:
-    def __init__(self, bot, message, isZip=False, extract=False, isQbit=False, isLeech=False, pswd=None, tag=None, seed=False):
+    def __init__(self, bot, message, isZip=False, extract=False, isQbit=False, isLeech=False, pswd=None, times=None, tag=None, seed=False):
         self.bot = bot
         self.message = message
         self.uid = self.message.message_id
@@ -48,7 +48,8 @@ class MirrorListener:
         self.tag = tag
         self.seed = any([seed, QB_SEED])
         self.isPrivate = self.message.chat.type in ['private', 'group']
-        self.suproc = None 
+        self.suproc = None
+        self.times = times
 
     def clean(self):
         try:
@@ -60,6 +61,7 @@ class MirrorListener:
             pass
 
     def onDownloadStart(self):
+        times = time()
         if not self.isPrivate and INCOMPLETE_TASK_NOTIFIER and DB_URI is not None:
             DbManger().add_incomplete_task(self.message.chat.id, self.message.link, self.tag)
 
@@ -214,7 +216,7 @@ class MirrorListener:
             msg += f'\n<b> ↳Files: </b>{files}'
             if typ != 0:
                 msg += f'\n<b>Corrupted Files: </b>{typ}'
-            msg += f'\n\n<b>user: </b>{self.tag}'
+            msg += f'\n\n<b>user: </b>{self.tag}{get_readable_time(time() - self.times)}'
             if not files:
                 sendMessage(msg, self.bot, self.message)
             else:
@@ -232,7 +234,7 @@ class MirrorListener:
             if ospath.isdir(f'{DOWNLOAD_DIR}{self.uid}/{name}'):
                 msg += f'\n<b>SubFolders: </b>{folders}'
                 msg += f'\n<b>Files: </b>{files}'
-            msg += f'\n\n<b>user: </b>{self.tag}'
+            msg += f'\n\n<b>user: </b>{self.tag}{get_readable_time(time() - self.times)}'
             buttons = ButtonMaker()
             buttons.buildbutton("Link Gdrive", link)
             LOGGER.info(f'Done Uploading {name}')
@@ -328,7 +330,7 @@ def _mirror(bot, message, isZip=False, extract=False, isQbit=False, isLeech=Fals
         pswd = pswd_arg[1]
 
     if message.from_user.username:
-        tag = f"@{message.from_user.username}<b>|id: </b>{message.from_user.id}"
+        tag = f"@{message.from_user.username}<b> | id:</b>{message.from_user.id}"
     else:
         tag = message.from_user.mention_html(message.from_user.first_name)
 

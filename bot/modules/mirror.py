@@ -214,7 +214,7 @@ class MirrorListener:
             msg += f'\n<b> ↳Files: </b>{files}'
             if typ != 0:
                 msg += f'\n<b>Corrupted Files: </b>{typ}'
-            msg += f'\n\n<b>cc: </b>{self.tag}\n\n'
+            msg += f'\n\n<b>cc: </b>{self.tag}|<b> id: </b>{self.id}'
             if not files:
                 sendMessage(msg, self.bot, self.message)
             else:
@@ -232,7 +232,7 @@ class MirrorListener:
             if ospath.isdir(f'{DOWNLOAD_DIR}{self.uid}/{name}'):
                 msg += f'\n<b>SubFolders: </b>{folders}'
                 msg += f'\n<b>Files: </b>{files}'
-            msg += f'\n\n<b>cc: </b>{self.tag}'
+            msg += f'\n\n<b>cc: </b>{self.tag}|<b> id: </b>{self.id}'
             buttons = ButtonMaker()
             buttons.buildbutton("Link Gdrive", link)
             LOGGER.info(f'Done Uploading {name}')
@@ -328,7 +328,8 @@ def _mirror(bot, message, isZip=False, extract=False, isQbit=False, isLeech=Fals
         pswd = pswd_arg[1]
 
     if message.from_user.username:
-        tag = f"@{message.from_user.username}{message.from_user.id}"
+        tag = f"@{message.from_user.username}"
+        tagid = f"@{message.from_user.id}"
     else:
         tag = message.from_user.mention_html(message.from_user.first_name)
 
